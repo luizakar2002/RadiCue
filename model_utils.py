@@ -6,6 +6,10 @@ import matplotlib.pyplot as plt
 from tensorflow.keras.preprocessing import image
 import skimage, skimage.io
 
+import requests
+from PIL import Image
+import cv2
+
 from grad import grad_cam
 
 labels = ['Cardiomegaly', 
@@ -46,18 +50,16 @@ def load_image(path, preprocess=True, H = 320, W = 320):
     return x
 
 def load_image_normalize(url, mean=124.463743359375, std=63.81871748655583, H=320, W=320):
-    im = skimage.io.imread(url)
-    print("IMAGE SHAPE")
-    print(im.shape)
-    print("number of dimensions")
-    print(len(im.shape))
-    x = skimage.transform.resize(im, (H, W))
-    print("AFTER RESIZE")
-    print("IMAGE SHAPE")
-    print(im.shape)
-    print("number of dimensions")
-    print(len(im.shape))
-    # x = image.load_img(path, target_size=(H, W))
+    response = requests.get(url)
+    if response.status_code == 200:
+        file_name = 'saved_locally.png'
+        with open(file_name, 'wb') as file:
+            file.write(response.content)
+            print(f"Image saved as {file_name}")
+    else:
+        print("Failed to download the image.")
+    path = 'saved_locally.png'
+    x = image.load_img(path, target_size=(H, W))
     x -= np.array([mean])
     x /= std
     x = np.expand_dims(x, axis=0)
@@ -66,6 +68,8 @@ def load_image_normalize(url, mean=124.463743359375, std=63.81871748655583, H=32
 def predictFromModel(url):
     # im = skimage.io.imread(url)
     # im_path = '00005410_000.png' # mass
+    print("URL")
+    print(url)
     im = load_image_normalize(url)
 
 
